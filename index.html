@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Firebase -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
   const firebaseConfig = {
     apiKey: "AIzaSyABgOhSS0OCV1n3ScsEu_K0Hii-CchVgzQ",
     authDomain: "project-173ce15a-0014-4a65-962.firebaseapp.com",
@@ -16,16 +15,14 @@
     appId: "1:41446422135:web:e10bc2d6f15c8173b6b872"
   };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
-  // Push state to Firebase whenever save() is called
   window.firebaseSave = (state) => {
-    set(ref(db, 'ko2026'), state);
+    db.ref('ko2026').set(state);
   };
 
-  // Listen for changes from other devices and update UI
-  onValue(ref(db, 'ko2026'), (snapshot) => {
+  db.ref('ko2026').on('value', (snapshot) => {
     const data = snapshot.val();
     if (data && data.games) {
       window._firebaseState = data;
