@@ -22,13 +22,17 @@
     db.ref('ko2026').set(state);
   };
 
-  db.ref('ko2026').on('value', (snapshot) => {
+db.ref('ko2026').on('value', (snapshot) => {
+  try {
     const data = snapshot.val();
-    if (data && data.games) {
+    if (data && data.games && window._appReady) {
       window._firebaseState = data;
       if (window.applyFirebaseState) window.applyFirebaseState(data);
     }
-  });
+  } catch(e) {
+    console.log('Firebase sync skipped:', e.message);
+  }
+});
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1466,7 +1470,6 @@ window.applyFirebaseState = (data) => {
   state = data;
   renderAll();
 };
-
 // ── INIT ──
 renderBanner();
 renderDashboard();
