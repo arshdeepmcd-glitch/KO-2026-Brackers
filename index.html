@@ -1462,6 +1462,7 @@ setInterval(() => {
   } catch(e) {}
 }, 15000);
 window.applyFirebaseState = (data) => {
+  if (!window._appReady) return;
   state = data;
   renderAll();
 };
@@ -1471,6 +1472,7 @@ renderBanner();
 renderDashboard();
 seUpdateSport();
 showSport('soccer');
+window._appReady = true;
 </script>
 </body>
 </html>
