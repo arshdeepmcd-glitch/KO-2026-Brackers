@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -19,23 +21,21 @@
   const db = firebase.database();
 
   window.firebaseSave = (state) => {
-    db.ref('ko2026').set(state);
+    try { db.ref('ko2026').set(state); } catch(e) { console.warn('Firebase save failed:', e.message); }
   };
 
-db.ref('ko2026').on('value', (snapshot) => {
-  try {
-    const data = snapshot.val();
-    if (data && data.games && window._appReady) {
-      window._firebaseState = data;
-      if (window.applyFirebaseState) window.applyFirebaseState(data);
+  db.ref('ko2026').on('value', (snapshot) => {
+    try {
+      const data = snapshot.val();
+      if (data && data.games && window._appReady) {
+        window._firebaseState = data;
+        if (window.applyFirebaseState) window.applyFirebaseState(data);
+      }
+    } catch(e) {
+      console.log('Firebase sync skipped:', e.message);
     }
-  } catch(e) {
-    console.log('Firebase sync skipped:', e.message);
-  }
-});
+  });
 </script>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Khalsa Olympics 2026 — Live Dashboard</title>
 <style>
 :root {
@@ -688,7 +688,7 @@ function now() {
 }
 
 function effectiveStart(game) {
-  const delay = (state.courtDelays[game.court]||0) * 60000;
+  const delay = ((state.courtDelays||{})[game.court]||0) * 60000;
   return game.scheduledStart + delay;
 }
 
@@ -1456,18 +1456,16 @@ setInterval(() => {
   if (document.getElementById('tvClock')) document.getElementById('tvClock').textContent = t;
 }, 1000);
 
-// localStorage sync (multi-device)
-setInterval(() => {
-  try {
-    const raw = localStorage.getItem(SK);
-    if (!raw) return;
-    const remote = JSON.parse(raw);
-    if (remote && remote.games) { state = remote; renderAll(); }
-  } catch(e) {}
-}, 15000);
+// Firebase handles real-time sync across devices
 window.applyFirebaseState = (data) => {
   if (!window._appReady) return;
-  state = data;
+  // Merge with defaults to ensure all required fields exist
+  state = Object.assign({}, defaultState(), data, {
+    courtDelays: data.courtDelays || {},
+    teams: data.teams || defaultTeams(),
+    games: data.games || {},
+    simTime: data.simTime || null
+  });
   renderAll();
 };
 // ── INIT ──
